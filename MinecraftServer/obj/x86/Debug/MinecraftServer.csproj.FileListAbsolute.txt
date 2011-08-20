@@ -1,0 +1,6 @@
+c:\users\dv90\Desktop\Dev\MinecraftServer\MinecraftServer\bin\Debug\MinecraftServer.exe
+c:\users\dv90\Desktop\Dev\MinecraftServer\MinecraftServer\bin\Debug\MinecraftServer.pdb
+c:\users\dv90\Desktop\Dev\MinecraftServer\MinecraftServer\obj\x86\Debug\ResolveAssemblyReference.cache
+c:\users\dv90\Desktop\Dev\MinecraftServer\MinecraftServer\obj\x86\Debug\MinecraftServer.exe
+c:\users\dv90\Desktop\Dev\MinecraftServer\MinecraftServer\obj\x86\Debug\MinecraftServer.pdb
+C:\Users\dv90\Desktop\Dev\MinecraftServer\MinecraftServer\bin\Debug\Ionic.Zlib.dll
