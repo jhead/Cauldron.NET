@@ -5,7 +5,7 @@ using System.Text;
 using System.IO;
 using Ionic.Zlib;
 
-namespace MinecraftServer
+namespace MinecraftServer.World
 {
     public class Chunk
     {

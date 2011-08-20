@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MinecraftServer
+namespace MinecraftServer.Net
 {
     public class Packet
     {

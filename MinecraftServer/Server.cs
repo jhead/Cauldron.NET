@@ -5,6 +5,8 @@ using System.Text;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using MinecraftServer.Net;
+using MinecraftServer.World;
 
 namespace MinecraftServer
 {
@@ -50,7 +52,7 @@ namespace MinecraftServer
             ServerSocket.Listen(0);
 
             Running = true;
-            WorldManager.AddWorld(new World(WorldManager, "world"));
+            WorldManager.AddWorld(new World.World(WorldManager, "world"));
 
             Socket clientSocket;
             Client client;

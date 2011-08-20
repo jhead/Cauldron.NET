@@ -6,7 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.IO;
 
-namespace MinecraftServer
+namespace MinecraftServer.Net
 {
     public class PacketStream
     {
