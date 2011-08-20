@@ -2,7 +2,9 @@ dv90's C# Minecraft Server
 ==========================
 
 I currently don't have a fancy name for it; deal with it.
+
 If you would like to help with the project: Add/Send me a message on skype (Username is 'woahitsjustin') or join irc.pwnage.me #chat and mention 'dv90'.
+
 This project was started on: August 18th, 2011.
 
 Current Features
