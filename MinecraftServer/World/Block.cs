@@ -9,14 +9,34 @@ namespace MinecraftServer.World
     {
 
         public Chunk Chunk { get; set; }
-        public WorldLocation Location { get; set; }
-        public BlockType Type;
+
+        // Type is readonly outside of this class; use SetBlockType() instead.
+        private BlockType _Type;
+        public BlockType Type
+        {
+            get
+            {
+                return _Type;
+            }
+            set { }
+        }
+
+        // Location cannot be set outside of this class; aka, blocks cannot move.
+        private WorldLocation _Location;
+        public WorldLocation Location
+        {
+            get
+            {
+                return _Location;
+            }
+            set { }
+        }
 
         public Block(Chunk chunk, BlockType type, WorldLocation loc)
         {
             Chunk = chunk;
-            Type = type;
-            Location = loc;
+            _Type = type;
+            _Location = loc;
         }
 
         public int GetX()
@@ -34,9 +54,20 @@ namespace MinecraftServer.World
             return Location.Z;
         }
 
+        public BlockType GetBlockType()
+        {
+            return _Type;
+        }
+
+        public void SetBlockType(BlockType type)
+        {
+            _Type = type;
+            Chunk.World.WorldManager.Server.OnBlockChange(this);
+        }
+
         public void BreakBlock()
         {
-            Type = BlockType.Air;
+            _Type = BlockType.Air;
             // TODO: Drop item
             Chunk.World.WorldManager.Server.OnBlockChange(this);
         }

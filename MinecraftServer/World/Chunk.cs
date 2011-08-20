@@ -111,7 +111,6 @@ namespace MinecraftServer.World
             //
 
             bytes = null;
-            GC.Collect();
 
             return finalBytes;
         }

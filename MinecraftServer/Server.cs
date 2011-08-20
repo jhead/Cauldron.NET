@@ -18,7 +18,7 @@ namespace MinecraftServer
         public IPEndPoint LocalEP { get; set; }
         public Boolean Running { get; set; }
 
-        public WorldManager WorldManager { get; set; }
+        private WorldManager WorldManager { get; set; }
         public PacketHandler PacketHandler { get; set; }
         public int TotalEntityCount { get; set; }
 
@@ -52,7 +52,7 @@ namespace MinecraftServer
             ServerSocket.Listen(0);
 
             Running = true;
-            WorldManager.AddWorld(new World.World(WorldManager, "world"));
+            WorldManager.AddWorld(new World.World(WorldManager, "world", true));
 
             Socket clientSocket;
             Client client;
@@ -132,17 +132,20 @@ namespace MinecraftServer
 
         public void BroadcastPacket(Packet packet, Client SourceClient = null)
         {
-            foreach (Client c in Clients.Values)
+            lock (Clients)
             {
-                if(!c.Equals(SourceClient))
-                    c.Stream.WritePacket(packet);
+                foreach (Client c in Clients.Values)
+                {
+                    if (!c.Equals(SourceClient))
+                        c.Stream.WritePacket(packet);
+                }
             }
         }
 
         public void OnBlockChange(Block b)
         {
             // TODO: Only send to players within range of block
-            BroadcastPacket(new BlockChangePacket(b.GetX(), (byte)b.GetY(), b.GetZ(), (byte)b.Type, 0x00));
+            BroadcastPacket(new BlockChangePacket(b.GetX(), (byte)b.GetY(), b.GetZ(), (byte)b.GetBlockType(), 0x00));
         }
 
     }

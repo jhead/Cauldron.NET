@@ -86,38 +86,37 @@ namespace MinecraftServer
 
         public void SendInitialChunks()
         {
-            // Pre-Chunks
-            PreChunkPacket prechunkPacket;
-            for (int x = -3; x <= 3; x++)
+            Chunk c = null;
+
+            for (int xOff = -5; xOff <= 5; xOff++)
             {
-                for (int z = -3; z <= 3; z++)
+                for (int zOff = -5; zOff <= 5; zOff++)
                 {
-                    prechunkPacket = new PreChunkPacket(x, z, true);
-                    Stream.WritePacket(prechunkPacket);
+                    c = Server.GetWorldManager().GetWorld(0).GetChunk(new WorldLocation((int)Player.Location.X + (xOff * 16), (int)Player.Location.Y, (int)Player.Location.Z + (zOff * 16)));
+                    if (c != null)
+                        SendChunk(c);
                 }
             }
+        }
 
-            // Chunks
-            MapChunkPacket mapchunkPacket;
-            for (int x = -3; x <= 3; x++)
+        public void SendChunk(Chunk c, Boolean includePrechunk = true)
+        {
+            if (includePrechunk)
             {
-                for (int z = -3; z <= 3; z++)
-                {
-                    mapchunkPacket = new MapChunkPacket();
-                    mapchunkPacket.X = x * 16;
-                    mapchunkPacket.Y = 0 * 128;
-                    mapchunkPacket.Z = z * 16;
-                    mapchunkPacket.SizeX = 15;
-                    mapchunkPacket.SizeY = 127;
-                    mapchunkPacket.SizeZ = 15;
-
-                    byte[] chunkData = Server.GetWorldManager().GetWorld(0).GetChunk(x, z).GetChunkData();
-                    mapchunkPacket.CompressedSize = chunkData.Length;
-                    mapchunkPacket.ChunkData = chunkData;
-
-                    Stream.WritePacket(mapchunkPacket);
-                }
+                PreChunkPacket prechunkPacket = new PreChunkPacket(c.Location.X, c.Location.Z, true);
+                Stream.WritePacket(prechunkPacket);
             }
+
+            MapChunkPacket mapchunkPacket = new MapChunkPacket();
+            mapchunkPacket.ChunkData = c.GetChunkData();
+            mapchunkPacket.CompressedSize = mapchunkPacket.ChunkData.Length;
+            mapchunkPacket.X = c.Location.X * 16;
+            mapchunkPacket.Y = (short)0;
+            mapchunkPacket.Z = c.Location.Z * 16;
+            mapchunkPacket.SizeX = (byte)c.SizeX;
+            mapchunkPacket.SizeY = (byte)c.SizeY;
+            mapchunkPacket.SizeZ = (byte)c.SizeZ;
+            Stream.WritePacket(mapchunkPacket);
         }
 
         public void SendInitialInventory()

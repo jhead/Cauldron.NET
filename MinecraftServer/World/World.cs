@@ -10,19 +10,46 @@ namespace MinecraftServer.World
 
         public WorldManager WorldManager;
         public String Name { get; set; }
+        public WorldLocation SpawnLocation;
 
         private Dictionary<ChunkLocation, Chunk> Chunks;
 
-        public World(WorldManager manager, String name)
+        public World(WorldManager manager, String name, Boolean autogenerate = false)
         {
             WorldManager = manager;
             Name = name;
             Chunks = new Dictionary<ChunkLocation, Chunk>();
+            SpawnLocation = new WorldLocation(0, 65, 0);
+
+            if(autogenerate)
+                Generate();
         }
 
-        public Chunk GetChunk(int x, int z)
+        public void Generate()
         {
-            return GetChunk(new ChunkLocation(x, 0, z));
+            Logger.Info("Generating new world; this may take a minute...");
+
+            ChunkLocation chunkLoc;
+            for (int x = SpawnLocation.X - 3; x <= SpawnLocation.X + 3; x++)
+            {
+                for (int z = SpawnLocation.Z - 3; z <= SpawnLocation.Z + 3; z++)
+                {
+                    chunkLoc = new ChunkLocation(x, 0, z);
+                    Chunks.Add(chunkLoc, new Chunk(this, chunkLoc));
+                }
+            }
+
+            Logger.Info("World generation complete!");
+        }
+
+        public void GenerateChunk(ChunkLocation loc)
+        {
+            // TODO
+        }
+
+        public Chunk GetChunk(WorldLocation loc)
+        {
+            return GetChunk(new ChunkLocation((int)Math.Floor((Double)loc.X / 16), loc.Y, (int)Math.Floor((Double)loc.Z / 16)));
         }
 
         public Chunk GetChunk(ChunkLocation loc)

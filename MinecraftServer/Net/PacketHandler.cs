@@ -115,7 +115,7 @@ namespace MinecraftServer.Net
 
                             WorldLocation bLoc = new WorldLocation(placeX, placeY, placeZ);
                             Block b = Server.GetWorldManager().GetWorld(0).GetBlock(bLoc);
-                            b.Type = (BlockType)((PlayerBlockPlacementPacket)packet).BlockID;
+                            b.SetBlockType((BlockType)((PlayerBlockPlacementPacket)packet).BlockID);
                             Server.OnBlockChange(b);
                         }
                         break;
