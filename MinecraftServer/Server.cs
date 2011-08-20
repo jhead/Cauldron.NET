@@ -29,6 +29,8 @@ namespace MinecraftServer
         private Socket ServerSocket;
         private Dictionary<Socket, Client> Clients;
         private List<Thread> ClientThreads;
+        private Timer TickTimer;
+        private DateTime LastCleanup;
 
         public Server(IPAddress bindAddress, int bindPort)
         {
@@ -42,6 +44,7 @@ namespace MinecraftServer
             WorldManager = new WorldManager(this);
             PacketHandler = new PacketHandler(this);
             TotalEntityCount = 0;
+            TickTimer = null;
         }
 
         public void Run()
@@ -53,6 +56,7 @@ namespace MinecraftServer
 
             Running = true;
             WorldManager.AddWorld(new World.World(WorldManager, "world", true));
+            TickTimer = new Timer(new TimerCallback(Tick), null, 0, 50);
 
             Socket clientSocket;
             Client client;
@@ -123,6 +127,16 @@ namespace MinecraftServer
             Logger.Info("Server shutdown complete.");
 
             Thread.CurrentThread.Abort();
+        }
+
+        public void Tick(Object stateInfo)
+        {
+            // TODO: Update time, water, lava, fire, etc.
+            if ((DateTime.Now - LastCleanup).Seconds > 10)
+            {
+                GC.Collect();
+                LastCleanup = DateTime.Now;
+            }
         }
 
         public WorldManager GetWorldManager()

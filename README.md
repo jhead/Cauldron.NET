@@ -28,13 +28,14 @@ Planned Features (Soon)
 * Spam/overflow protection
 * Fly/Speedhack protection (allow with config file)
 * Configuration file
+* Water/Lava/Fire spread and other tick-based operations (Time)
 
 Planned Features (Later)
 ------------------------
 
 * Fast and complete world generation based on selectable (and customizable) world generators
 * Load worlds from official Minecraft server world files (mcregion)
-* Simple yet powerful plugin system based on a scripting language
+* Simple yet powerful plugin system with support for multiple types of plugins (languages); eg. .NET (dll), Java (jar) + Loadable scripts (+ easy reloading/editing for developers)
 * Multi-World support and commands for creating/managing worlds on-the-fly
 * Multi-Server support; link servers together, across worlds
 * Built-In permissions/group system for players
@@ -44,3 +45,5 @@ Planned Features (Later)
 * Integrated multi-server IRC supporty
 * Link Nether world to normal worlds through bedrock lower layer: Players can fall through the "void" and appear in the Nether.
 * Toggable global/region PVP
+* Complete biome/world managment API (Commands and Web UI); Change biomes instantly and with ease, quickly regenerate chunks, and even entire worlds, without disconnecting players
+* Built-In inventory editing for server administrators through commands and the Web UI
