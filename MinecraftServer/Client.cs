@@ -21,14 +21,18 @@ namespace MinecraftServer
 
         public Player Player { get; set; }
         public PacketStream Stream { get; set; }
+        public IPEndPoint RemoteEP { get; set; }
         
         public Boolean HandshakeComplete { get; set; }
         public Boolean LoggedIn { get; set; }
+        public Boolean Spawned { get; set; }
+        public Boolean IsDisposed { get; set; }
 
         public Client(Server server, Socket clientSocket)
         {
             Server = server;
             ClientSocket = clientSocket;
+            RemoteEP = (IPEndPoint)ClientSocket.RemoteEndPoint;
 
             Player = new Player();
 
@@ -40,7 +44,7 @@ namespace MinecraftServer
         {
             Packet packet = null;
 
-            while (ClientSocket.Connected)
+            while (ClientSocket.Connected && !Stream.Closed)
             {
                 packet = Stream.ReadPacket();
                 Server.PacketHandler.HandlePacket(packet, this);
@@ -49,12 +53,21 @@ namespace MinecraftServer
                     SendKeepAlive();
             }
 
-            Logger.Info("Client disconnected: " + ClientSocket.RemoteEndPoint + " (Socket Closed)");
+            Logger.Info("Client disconnected: " + RemoteEP + " (Socket Closed)");
+
+            if (!IsDisposed)
+                Dispose();
         }
 
         public void Dispose()
         {
+            IsDisposed = true;
+            if (ClientSocket.Connected)
+                ClientSocket.Dispose();
 
+            Stream.Dispose();
+
+            Server.RemoveClient(this);
         }
 
         public void SendInitialPosition()
@@ -113,9 +126,9 @@ namespace MinecraftServer
             mapchunkPacket.X = c.Location.X * 16;
             mapchunkPacket.Y = (short)0;
             mapchunkPacket.Z = c.Location.Z * 16;
-            mapchunkPacket.SizeX = (byte)c.SizeX;
-            mapchunkPacket.SizeY = (byte)c.SizeY;
-            mapchunkPacket.SizeZ = (byte)c.SizeZ;
+            mapchunkPacket.SizeX = (byte)Chunk.SizeX;
+            mapchunkPacket.SizeY = (byte)Chunk.SizeY;
+            mapchunkPacket.SizeZ = (byte)Chunk.SizeZ;
             Stream.WritePacket(mapchunkPacket);
         }
 

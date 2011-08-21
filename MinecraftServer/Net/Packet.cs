@@ -255,6 +255,74 @@ namespace MinecraftServer.Net
 
     }
 
+    public class PickupSpawnPacket : Packet
+    {
+        public int EntityID;
+        public short ItemID;
+        public byte Count;
+        public short Damage;
+        public int X, Y, Z;
+        public byte Rotation, Pitch, Roll;
+
+        public PickupSpawnPacket(int eid, short iid, byte count, short damage, int x, int y, int z, byte rot, byte pitch, byte roll)
+            : base(PacketType.PickupSpawn)
+        {
+            EntityID = eid;
+            ItemID = iid;
+            Count = count;
+            Damage = damage;
+            X = x;
+            Y = y;
+            Z = z;
+            Rotation = rot;
+            Pitch = pitch;
+            Roll = roll;
+        }
+    }
+
+    public class EntityPacket : Packet
+    {
+        public int EntityID;
+
+        public EntityPacket(int eid)
+            : base(PacketType.Entity)
+        {
+            EntityID = eid;
+        }
+    }
+
+    public class NamedEntitySpawnPacket : Packet
+    {
+        public int EntityID;
+        public String Name;
+        public int X, Y, Z;
+        public byte Rotation, Pitch;
+        public short Item;
+
+        public NamedEntitySpawnPacket(int eid, String name, int x, int y, int z, byte rot, byte pitch, short item)
+            : base(PacketType.NamedEntitySpawn)
+        {
+            EntityID = eid;
+            Name = name;
+            X = x;
+            Y = y;
+            Z = z;
+            Rotation = rot;
+            Pitch = pitch;
+            Item = item;
+        }
+    }
+
+    public class DisconnectPacket : Packet
+    {
+        public String Reason;
+
+        public DisconnectPacket()
+            : base(PacketType.Disconnect)
+        {
+        }
+    }
+
     public enum PacketType : byte
     {
         KeepAlive = 0x00,

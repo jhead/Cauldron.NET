@@ -10,6 +10,7 @@ namespace MinecraftServer
     {
 
         public static StreamWriter LogWriter = new StreamWriter(new FileStream("server.log", FileMode.OpenOrCreate));
+        public static Boolean EnableDebug = true;
 
         public static String GetTimestamp()
         {
@@ -32,7 +33,8 @@ namespace MinecraftServer
 
         public static void Debug(Object o)
         {
-            Log(LogLevel.DEBUG, o);
+            if(EnableDebug)
+                Log(LogLevel.DEBUG, o);
         }
 
         public static void Info(Object o)
@@ -55,6 +57,11 @@ namespace MinecraftServer
             Log(LogLevel.FATAL, o);
         }
 
+        public static void Chat(String s)
+        {
+            Log(LogLevel.CHAT, s);
+        }
+
     }
 
     public enum LogLevel
@@ -63,6 +70,7 @@ namespace MinecraftServer
         INFO,
         WARN,
         ERROR,
-        FATAL
+        FATAL,
+        CHAT
     }
 }

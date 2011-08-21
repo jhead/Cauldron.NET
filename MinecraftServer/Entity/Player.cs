@@ -5,11 +5,10 @@ using System.Text;
 
 namespace MinecraftServer.Entity
 {
-    public class Player
+    public class Player : Entity
     {
 
         public String Username { get; set; }
-        public int EntityID { get; set; }
         public Location Location { get; set; }
         public float Yaw { get; set; }
         public float Pitch { get; set; }

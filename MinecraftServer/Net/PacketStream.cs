@@ -13,90 +13,136 @@ namespace MinecraftServer.Net
 
         private NetworkStream Stream;
 
+        public Boolean Closed { get; set; }
+
         public PacketStream(NetworkStream stream)
         {
             Stream = stream;
         }
 
+        public void Dispose()
+        {
+            Stream.Dispose();
+            Closed = true;
+        }
+
         public void WritePacket(Packet packet)
         {
-            if (!Stream.CanWrite)
-                throw new Exception("Cannot write packet to stream.");
+            if (!Stream.CanWrite || Closed)
+                return;
 
-            Stream.WriteByte((byte)packet.Type);
-
-            switch (packet.Type)
+            try
             {
-                case PacketType.KeepAlive:
-                    break;
+                Stream.WriteByte((byte)packet.Type);
 
-                case PacketType.Login:
-                    Stream.WriteInt(((LoginResponsePacket)packet).EntityID);
-                    Stream.WriteString16(((LoginResponsePacket)packet).ServerName);
-                    Stream.WriteLong(((LoginResponsePacket)packet).MapSeed);
-                    Stream.WriteByte(((LoginResponsePacket)packet).Dimension);
-                    break;
+                switch (packet.Type)
+                {
+                    case PacketType.KeepAlive:
+                        break;
 
-                case PacketType.Handshake:
-                    Stream.WriteString16(((HandshakeResponsePacket)packet).Hash);
-                    break;
+                    case PacketType.Login:
+                        Stream.WriteInt(((LoginResponsePacket)packet).EntityID);
+                        Stream.WriteString16(((LoginResponsePacket)packet).ServerName);
+                        Stream.WriteLong(((LoginResponsePacket)packet).MapSeed);
+                        Stream.WriteByte(((LoginResponsePacket)packet).Dimension);
+                        break;
 
-                case PacketType.PlayerPositionLook:
-                    Stream.WriteDouble(((PlayerPositionLookPacket)packet).X);
-                    Stream.WriteDouble(((PlayerPositionLookPacket)packet).Y);
-                    Stream.WriteDouble(((PlayerPositionLookPacket)packet).Stance);
-                    Stream.WriteDouble(((PlayerPositionLookPacket)packet).Z);
-                    Stream.WriteFloat(((PlayerPositionLookPacket)packet).Yaw);
-                    Stream.WriteFloat(((PlayerPositionLookPacket)packet).Yaw);
-                    Stream.WriteBoolean(((PlayerPositionLookPacket)packet).OnGround);
-                    break;
+                    case PacketType.Handshake:
+                        Stream.WriteString16(((HandshakeResponsePacket)packet).Hash);
+                        break;
 
-                case PacketType.PreChunk:
-                    Stream.WriteInt(((PreChunkPacket)packet).X);
-                    Stream.WriteInt(((PreChunkPacket)packet).Z);
-                    Stream.WriteBoolean(((PreChunkPacket)packet).Mode);
-                    break;
+                    case PacketType.PlayerPositionLook:
+                        Stream.WriteDouble(((PlayerPositionLookPacket)packet).X);
+                        Stream.WriteDouble(((PlayerPositionLookPacket)packet).Y);
+                        Stream.WriteDouble(((PlayerPositionLookPacket)packet).Stance);
+                        Stream.WriteDouble(((PlayerPositionLookPacket)packet).Z);
+                        Stream.WriteFloat(((PlayerPositionLookPacket)packet).Yaw);
+                        Stream.WriteFloat(((PlayerPositionLookPacket)packet).Yaw);
+                        Stream.WriteBoolean(((PlayerPositionLookPacket)packet).OnGround);
+                        break;
 
-                case PacketType.MapChunk:
-                    Stream.WriteInt(((MapChunkPacket)packet).X);
-                    Stream.WriteShort(((MapChunkPacket)packet).Y);
-                    Stream.WriteInt(((MapChunkPacket)packet).Z);
-                    Stream.WriteByte(((MapChunkPacket)packet).SizeX);
-                    Stream.WriteByte(((MapChunkPacket)packet).SizeY);
-                    Stream.WriteByte(((MapChunkPacket)packet).SizeZ);
-                    Stream.WriteInt(((MapChunkPacket)packet).CompressedSize);
-                    Stream.Write(((MapChunkPacket)packet).ChunkData, 0, ((MapChunkPacket)packet).CompressedSize);
-                    break;
+                    case PacketType.PreChunk:
+                        Stream.WriteInt(((PreChunkPacket)packet).X);
+                        Stream.WriteInt(((PreChunkPacket)packet).Z);
+                        Stream.WriteBoolean(((PreChunkPacket)packet).Mode);
+                        break;
 
-                case PacketType.SpawnPosition:
-                    Stream.WriteInt(((SpawnPositionPacket)packet).X);
-                    Stream.WriteInt(((SpawnPositionPacket)packet).Y);
-                    Stream.WriteInt(((SpawnPositionPacket)packet).Z);
-                    break;
+                    case PacketType.MapChunk:
+                        Stream.WriteInt(((MapChunkPacket)packet).X);
+                        Stream.WriteShort(((MapChunkPacket)packet).Y);
+                        Stream.WriteInt(((MapChunkPacket)packet).Z);
+                        Stream.WriteByte(((MapChunkPacket)packet).SizeX);
+                        Stream.WriteByte(((MapChunkPacket)packet).SizeY);
+                        Stream.WriteByte(((MapChunkPacket)packet).SizeZ);
+                        Stream.WriteInt(((MapChunkPacket)packet).CompressedSize);
+                        Stream.Write(((MapChunkPacket)packet).ChunkData, 0, ((MapChunkPacket)packet).CompressedSize);
+                        break;
 
-                case PacketType.ChatMessage:
-                    Stream.WriteString16(String.Format("<{0}> {1}", ((ChatMessagePacket)packet).Username, ((ChatMessagePacket)packet).Message));
-                    Logger.Debug(String.Format("<{0}> {1}", ((ChatMessagePacket)packet).Username, ((ChatMessagePacket)packet).Message));
-                    break;
+                    case PacketType.SpawnPosition:
+                        Stream.WriteInt(((SpawnPositionPacket)packet).X);
+                        Stream.WriteInt(((SpawnPositionPacket)packet).Y);
+                        Stream.WriteInt(((SpawnPositionPacket)packet).Z);
+                        break;
 
-                case PacketType.BlockChange:
-                    Stream.WriteInt(((BlockChangePacket)packet).X);
-                    Stream.WriteByte(((BlockChangePacket)packet).Y);
-                    Stream.WriteInt(((BlockChangePacket)packet).Z);
-                    Stream.WriteByte(((BlockChangePacket)packet).Type);
-                    Stream.WriteByte(((BlockChangePacket)packet).Metadata);
-                    break;
+                    case PacketType.ChatMessage:
+                        if (((ChatMessagePacket)packet).Username.Length > 0)
+                            Stream.WriteString16(String.Format("<{0}> {1}", ((ChatMessagePacket)packet).Username, ((ChatMessagePacket)packet).Message));
+                        else
+                            Stream.WriteString16(((ChatMessagePacket)packet).Message);
+                        break;
 
-                case PacketType.SetSlot:
-                    Stream.WriteByte(((SetSlotPacket)packet).WindowID);
-                    Stream.WriteShort(((SetSlotPacket)packet).Slot);
-                    Stream.WriteShort(((SetSlotPacket)packet).ItemID);
-                    Stream.WriteByte(((SetSlotPacket)packet).ItemCount);
-                    Stream.WriteShort(((SetSlotPacket)packet).ItemUses);
-                    break;
+                    case PacketType.BlockChange:
+                        Stream.WriteInt(((BlockChangePacket)packet).X);
+                        Stream.WriteByte(((BlockChangePacket)packet).Y);
+                        Stream.WriteInt(((BlockChangePacket)packet).Z);
+                        Stream.WriteByte(((BlockChangePacket)packet).Type);
+                        Stream.WriteByte(((BlockChangePacket)packet).Metadata);
+                        break;
 
-                default:
-                    break;
+                    case PacketType.SetSlot:
+                        Stream.WriteByte(((SetSlotPacket)packet).WindowID);
+                        Stream.WriteShort(((SetSlotPacket)packet).Slot);
+                        Stream.WriteShort(((SetSlotPacket)packet).ItemID);
+                        Stream.WriteByte(((SetSlotPacket)packet).ItemCount);
+                        Stream.WriteShort(((SetSlotPacket)packet).ItemUses);
+                        break;
+
+                    case PacketType.PickupSpawn:
+                        Stream.WriteInt(((PickupSpawnPacket)packet).EntityID);
+                        Stream.WriteShort(((PickupSpawnPacket)packet).ItemID);
+                        Stream.WriteByte(((PickupSpawnPacket)packet).Count);
+                        Stream.WriteShort(((PickupSpawnPacket)packet).Damage);
+                        Stream.WriteInt(((PickupSpawnPacket)packet).X);
+                        Stream.WriteInt(((PickupSpawnPacket)packet).Y);
+                        Stream.WriteInt(((PickupSpawnPacket)packet).Z);
+                        Stream.WriteByte(((PickupSpawnPacket)packet).Rotation);
+                        Stream.WriteByte(((PickupSpawnPacket)packet).Pitch);
+                        Stream.WriteByte(((PickupSpawnPacket)packet).Roll);
+                        break;
+
+                    case PacketType.Entity:
+                        Stream.WriteInt(((EntityPacket)packet).EntityID);
+                        break;
+
+                    case PacketType.NamedEntitySpawn:
+                        Stream.WriteInt(((NamedEntitySpawnPacket)packet).EntityID);
+                        Stream.WriteString16(((NamedEntitySpawnPacket)packet).Name);
+                        Stream.WriteInt(((NamedEntitySpawnPacket)packet).X);
+                        Stream.WriteInt(((NamedEntitySpawnPacket)packet).Y);
+                        Stream.WriteInt(((NamedEntitySpawnPacket)packet).Z);
+                        Stream.WriteByte(((NamedEntitySpawnPacket)packet).Rotation);
+                        Stream.WriteByte(((NamedEntitySpawnPacket)packet).Pitch);
+                        Stream.WriteShort(((NamedEntitySpawnPacket)packet).Item);
+                        break;
+
+                    default:
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Logger.Warn(e);
+                Dispose();
             }
 
             if(packet != null)
@@ -112,7 +158,6 @@ namespace MinecraftServer.Net
 
             try
             {
-
                 PacketType type = (PacketType)Stream.ReadByte();
                 switch (type)
                 {
@@ -188,11 +233,6 @@ namespace MinecraftServer.Net
                         packet = new ChatMessagePacket("", Stream.ReadString16());
                         break;
 
-                    case PacketType.Disconnect:
-                        // TODO
-                        Stream.ReadString16(); // Reason
-                        break;
-
                     case PacketType.HoldingChange:
                         // TODO
                         Stream.ReadShort(); // Slot ID
@@ -227,6 +267,11 @@ namespace MinecraftServer.Net
                         }
                         break;
 
+                    case PacketType.Disconnect:
+                        packet = new DisconnectPacket();
+                        ((DisconnectPacket)packet).Reason = Stream.ReadString16();
+                        break;
+
                     default:
                         Logger.Debug("Unhandled data: " + type);
                         break;
@@ -248,33 +293,33 @@ namespace MinecraftServer.Net
     public static class StreamExtensions
     {
 
-        public static short ReadShort(this NetworkStream stream)
+        public static short ReadShort(this Stream stream)
         {
             byte[] buffer = new byte[2];
             stream.Read(buffer, 0, 2);
             return IPAddress.NetworkToHostOrder(BitConverter.ToInt16(buffer, 0));
         }
 
-        public static int ReadInt(this NetworkStream stream)
+        public static int ReadInt(this Stream stream)
         {
             byte[] buffer = new byte[4];
             stream.Read(buffer, 0, 4);
             return IPAddress.NetworkToHostOrder(BitConverter.ToInt32(buffer, 0));
         }
 
-        public static long ReadLong(this NetworkStream stream)
+        public static long ReadLong(this Stream stream)
         {
             byte[] buffer = new byte[8];
             stream.Read(buffer, 0, 8);
             return IPAddress.NetworkToHostOrder(BitConverter.ToInt64(buffer, 0));
         }
 
-        public static bool ReadBoolean(this NetworkStream stream)
+        public static bool ReadBoolean(this Stream stream)
         {
             return (stream.ReadByte() == 1 ? true : false);
         }
 
-        public static float ReadFloat(this NetworkStream stream)
+        public static float ReadFloat(this Stream stream)
         {
             byte[] buffer = new byte[4];
             stream.Read(buffer, 0, 4);
@@ -282,7 +327,7 @@ namespace MinecraftServer.Net
             return BitConverter.ToSingle(buffer, 0);
         }
 
-        public static double ReadDouble(this NetworkStream stream)
+        public static double ReadDouble(this Stream stream)
         {
             byte[] buffer = new byte[8];
             stream.Read(buffer, 0, 8);
@@ -290,7 +335,7 @@ namespace MinecraftServer.Net
             return BitConverter.ToDouble(buffer, 0);
         }
 
-        public static String ReadString8(this NetworkStream stream)
+        public static String ReadString8(this Stream stream)
         {
             int length = (int)StreamExtensions.ReadShort(stream);
             byte[] buffer = new byte[length];
@@ -299,7 +344,7 @@ namespace MinecraftServer.Net
             return Encoding.UTF8.GetString(buffer);
         }
 
-        public static String ReadString16(this NetworkStream stream)
+        public static String ReadString16(this Stream stream)
         {
             int length = ((int)StreamExtensions.ReadShort(stream)) * 2;
             byte[] buffer = new byte[length];
@@ -308,44 +353,44 @@ namespace MinecraftServer.Net
             return Encoding.BigEndianUnicode.GetString(buffer);
         }
 
-        public static void WriteInt(this NetworkStream stream, int value)
+        public static void WriteInt(this Stream stream, int value)
         {
             byte[] buffer = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(value));
             stream.Write(buffer, 0, buffer.Length);
         }
 
-        public static void WriteShort(this NetworkStream stream, short value)
+        public static void WriteShort(this Stream stream, short value)
         {
             byte[] buffer = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(value));
             stream.Write(buffer, 0, buffer.Length);
         }
 
-        public static void WriteLong(this NetworkStream stream, long value)
+        public static void WriteLong(this Stream stream, long value)
         {
             byte[] buffer = BitConverter.GetBytes(IPAddress.HostToNetworkOrder(value));
             stream.Write(buffer, 0, buffer.Length);
         }
 
-        public static void WriteBoolean(this NetworkStream stream, bool value)
+        public static void WriteBoolean(this Stream stream, bool value)
         {
             stream.WriteByte((value ? (byte)0x01 : (byte)0x00));
         }
 
-        public static void WriteFloat(this NetworkStream stream, float value)
+        public static void WriteFloat(this Stream stream, float value)
         {
             byte[] buffer = BitConverter.GetBytes(value);
             Array.Reverse(buffer);
             stream.Write(buffer, 0, buffer.Length);
         }
 
-        public static void WriteDouble(this NetworkStream stream, double value)
+        public static void WriteDouble(this Stream stream, double value)
         {
             byte[] buffer = BitConverter.GetBytes(value);
             Array.Reverse(buffer);
             stream.Write(buffer,0, buffer.Length);
         }
 
-        public static void WriteString8(this NetworkStream stream, String value)
+        public static void WriteString8(this Stream stream, String value)
         {
             byte[] buffer = new byte[value.Length + 2];
             short length = (short)value.Length;
@@ -356,10 +401,13 @@ namespace MinecraftServer.Net
             stream.Write(buffer, 0, buffer.Length);
         }
 
-        public static void WriteString16(this NetworkStream stream, String value)
+        public static void WriteString16(this Stream stream, String value)
         {
             byte[] buffer = new byte[(value.Length * 2) + 2];
             short length = (short)value.Length;
+
+            if (length > 100)
+                length = 100;
 
             Array.Copy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(length)), 0, buffer, 0, 2);
             Array.Copy(Encoding.BigEndianUnicode.GetBytes(value), 0, buffer, 2, length * 2);

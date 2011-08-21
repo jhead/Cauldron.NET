@@ -28,7 +28,7 @@ namespace MinecraftServer
 
         private Socket ServerSocket;
         private Dictionary<Socket, Client> Clients;
-        private List<Thread> ClientThreads;
+        private Dictionary<Client, Thread> ClientThreads;
         private Timer TickTimer;
         private DateTime LastCleanup;
 
@@ -39,7 +39,7 @@ namespace MinecraftServer
             LocalEP = new IPEndPoint(BindAddress, BindPort);
 
             Clients = new Dictionary<Socket, Client>();
-            ClientThreads = new List<Thread>();
+            ClientThreads = new Dictionary<Client, Thread>();
 
             WorldManager = new WorldManager(this);
             PacketHandler = new PacketHandler(this);
@@ -53,9 +53,12 @@ namespace MinecraftServer
                 Logger.Fatal("Unable to bind to " + BindAddress.ToString() + ":" + BindPort);
 
             ServerSocket.Listen(0);
-
             Running = true;
-            WorldManager.AddWorld(new World.World(WorldManager, "world", true));
+
+            WorldManager.Init();
+            if(WorldManager.Worlds.Count == 0)
+                WorldManager.AddWorld(new World.World(WorldManager, "awesome_world", true));
+
             TickTimer = new Timer(new TimerCallback(Tick), null, 0, 50);
 
             Socket clientSocket;
@@ -68,7 +71,7 @@ namespace MinecraftServer
                 Clients.Add(clientSocket, client);
 
                 clientThread = new Thread(client.Run);
-                ClientThreads.Add(clientThread);
+                ClientThreads.Add(client, clientThread);
                 clientThread.Start();
 
                 Logger.Info("New Connection: " + clientSocket.RemoteEndPoint);
@@ -112,7 +115,7 @@ namespace MinecraftServer
 
             lock (ClientThreads)
             {
-                foreach (Thread thread in ClientThreads)
+                foreach (Thread thread in ClientThreads.Values)
                 {
                     thread.Abort();
                 }
@@ -123,6 +126,11 @@ namespace MinecraftServer
 
             ClientThreads.Clear();
             ClientThreads = null;
+
+            foreach (World.World world in WorldManager.Worlds.Values)
+            {
+                world.Save();
+            }
 
             Logger.Info("Server shutdown complete.");
 
@@ -139,6 +147,26 @@ namespace MinecraftServer
             }
         }
 
+        public void RemoveClient(Client client)
+        {
+            Socket cs = null;
+
+            lock (Clients)
+            {
+                foreach (Socket s in Clients.Keys)
+                {
+                    if (Clients[s].Equals(client))
+                        cs = s;
+                }
+            }
+
+            if (cs != null)
+                Clients.Remove(cs);
+
+            client = null;
+            cs = null;
+        }
+
         public WorldManager GetWorldManager()
         {
             return WorldManager;
@@ -146,20 +174,21 @@ namespace MinecraftServer
 
         public void BroadcastPacket(Packet packet, Client SourceClient = null)
         {
-            lock (Clients)
+            Client[] clientArray = Clients.Values.ToArray();
+
+            foreach (Client c in clientArray)
             {
-                foreach (Client c in Clients.Values)
-                {
-                    if (!c.Equals(SourceClient))
-                        c.Stream.WritePacket(packet);
-                }
+                if (!c.Equals(SourceClient) && c.LoggedIn)
+                    c.Stream.WritePacket(packet);
             }
+
+           clientArray = null;
         }
 
         public void OnBlockChange(Block b)
         {
             // TODO: Only send to players within range of block
-            BroadcastPacket(new BlockChangePacket(b.GetX(), (byte)b.GetY(), b.GetZ(), (byte)b.GetBlockType(), 0x00));
+            BroadcastPacket(new BlockChangePacket(b.Location.X, (byte)b.Location.Y, b.Location.Z, (byte)b.GetBlockType(), 0x00));
         }
 
     }
