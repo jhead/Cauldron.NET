@@ -14,21 +14,23 @@ Current Features
 * Generates basic flat chunks (Grass -> Dirt -> Bedrock)
 * Players can place and break blocks (No item drops yet)
 * Basic chat implemented (No commands yet)
+* Saves/Loads worlds to and from file (Separate format from mcregion)
 
 Planned Features (Soon)
 -----------------------
 
-* Entity support (Both player and item entities)
-* Commands
+* ~Entity support (Both player and item entities)
+* Commands (Chat + Console + WebUI [Later])
 * More item/block types (Currently only supports 0-7 [Air-Bedrock])
-* Save worlds to file (Separate format from mcregion)
-* Complete protocol implementation
+* ~Complete protocol implementation
 * Spawn protection
-* Load chunks as players move
-* Spam/overflow protection
-* Fly/Speedhack protection (allow with config file)
+* ~Load chunks as players move
+* ~Spam/overflow protection
+* ~Fly/Speedhack protection (allow with config file)
 * Configuration file
 * Water/Lava/Fire spread and other tick-based operations (Time)
+
+'~' Symbol denotes features currently in the process of being implemented.
 
 Planned Features (Later)
 ------------------------
