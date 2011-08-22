@@ -92,7 +92,8 @@ namespace MinecraftServer.Net
             if (client.LoggedIn)
                 return;
 
-            client.Stream.WritePacket(new LoginResponsePacket(Server.TotalEntityCount + 1, Server.ServerName,
+            client.Player.EntityID = Server.TotalEntityCount++;
+            client.Stream.WritePacket(new LoginResponsePacket(client.Player.EntityID, Server.ServerName,
                 Server.MapSeed, (byte)(Server.IsNether ? -1 : 0)));
             client.Player.Username = packet.Username;
             client.LoggedIn = true;
@@ -101,15 +102,27 @@ namespace MinecraftServer.Net
             client.SendInitialInventory();
 
             Server.BroadcastPacket(new ChatMessagePacket("", ChatColor.Yellow + packet.Username + " joined the game."));
-            Server.BroadcastPacket(new NamedEntitySpawnPacket(client.Player.EntityID, client.Player.Username,
-                (int)client.Player.Location.X, (int)client.Player.Location.Y, (int)client.Player.Location.Z, 0, 0, 0), client);
-            Logger.Info("'" + packet.Username + "' joined the game.");
+            foreach (Client c in Server.GetClients())
+            {
+                if(!c.Equals(client))
+                    client.Stream.WritePacket(new NamedEntitySpawnPacket(c.Player.EntityID, c.Player.Username,
+                        (int)c.Player.Location.X, (int)c.Player.Location.Y, (int)c.Player.Location.Z, 0, 0, 0));
+            }
+            Logger.Info("'" + packet.Username + "' joined the game. [Entity ID = " + client.Player.EntityID + "]");
         }
 
         private void HandlePlayerPosition(Client client, PlayerPositionPacket packet)
         {
             // TODO: Check for speed/fly hacks, going through walls, etc.
             // Update player position
+            Location newLoc = new Location(packet.X, packet.Y, packet.Z);
+
+            byte xOff, yOff, zOff;
+            xOff = (byte)(-1 * Math.Min((int)(client.Player.Location.X - newLoc.X) * 32, 128));
+            yOff = (byte)(-1 * Math.Min((int)(client.Player.Location.Y - newLoc.Y) * 32, 128));
+            zOff = (byte)(-1 * Math.Min((int)(client.Player.Location.Z - newLoc.Z) * 32, 128));
+
+            Server.BroadcastPacket(new EntityLookRelativeMovePacket(client.Player.EntityID, xOff, yOff, zOff, 0, 0), client);
             client.Player.Location = new Location(packet.X, packet.Y, packet.Z);
         }
 
@@ -122,12 +135,24 @@ namespace MinecraftServer.Net
             // if (Location.Distance(client.Player.Location, newLoc) > 15 && client.Spawned)
             //     client.Dispose();
 
+            byte xOff, yOff, zOff;
+            xOff = (byte)(-1 * Math.Min((int)(client.Player.Location.X - newLoc.X) * 32, 128));
+            yOff = (byte)(-1 * Math.Min((int)(client.Player.Location.Y - newLoc.Y) * 32, 128));
+            zOff = (byte)(-1 * Math.Min((int)(client.Player.Location.Z - newLoc.Z) * 32, 128));
+
+            // TODO: Pitch & Yaw
+            Server.BroadcastPacket(new EntityLookRelativeMovePacket(client.Player.EntityID, xOff, yOff, zOff, 0, 0), client);
+
             client.Player.Location = newLoc;
             client.Player.Yaw = packet.Yaw;
             client.Player.Pitch = packet.Pitch;
 
             if (!client.Spawned)
+            {
                 client.Spawned = true;
+                Server.BroadcastPacket(new NamedEntitySpawnPacket(client.Player.EntityID, client.Player.Username,
+                (int)client.Player.Location.X, (int)client.Player.Location.Y, (int)client.Player.Location.Z, 0, 0, 0), client);
+            }
         }
 
         private void HandleChatMessage(Client client, ChatMessagePacket packet)
@@ -215,6 +240,7 @@ namespace MinecraftServer.Net
             if (client.LoggedIn && client.Player.Username.Length > 0)
             {
                 Server.BroadcastPacket(new ChatMessagePacket("", ChatColor.Yellow + client.Player.Username + " left the game."));
+                Server.BroadcastPacket(new DestroyEntityPacket(client.Player.EntityID));
                 Logger.Info(client.Player.Username + " left the game. (" + packet.Reason + ")");
             }
 

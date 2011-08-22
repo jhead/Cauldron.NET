@@ -313,6 +313,35 @@ namespace MinecraftServer.Net
         }
     }
 
+    public class DestroyEntityPacket : Packet
+    {
+        public int EntityID;
+
+        public DestroyEntityPacket(int eid)
+            : base(PacketType.DestroyEntity)
+        {
+            EntityID = eid;
+        }
+    }
+
+    public class EntityLookRelativeMovePacket : Packet
+    {
+        public int EntityID;
+        public byte X, Y, Z;
+        public byte Yaw, Pitch;
+
+        public EntityLookRelativeMovePacket(int eid, byte x, byte y, byte z, byte yaw, byte pitch)
+            : base(PacketType.EntityLookRelativeMove)
+        {
+            EntityID = eid;
+            X = x;
+            Y = y;
+            Z = z;
+            Yaw = yaw;
+            Pitch = pitch;
+        }
+    }
+
     public class DisconnectPacket : Packet
     {
         public String Reason;

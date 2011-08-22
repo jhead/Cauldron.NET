@@ -191,5 +191,13 @@ namespace MinecraftServer
             BroadcastPacket(new BlockChangePacket(b.Location.X, (byte)b.Location.Y, b.Location.Z, (byte)b.GetBlockType(), 0x00));
         }
 
+        public Client[] GetClients()
+        {
+            lock (Clients)
+            {
+                return Clients.Values.ToArray();
+            }
+        }
+
     }
 }

@@ -10,7 +10,7 @@ namespace MinecraftServer
     {
 
         public static StreamWriter LogWriter = new StreamWriter(new FileStream("server.log", FileMode.OpenOrCreate));
-        public static Boolean EnableDebug = true;
+        public static Boolean EnableDebug = false;
 
         public static String GetTimestamp()
         {

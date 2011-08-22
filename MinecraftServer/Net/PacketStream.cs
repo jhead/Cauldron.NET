@@ -135,6 +135,19 @@ namespace MinecraftServer.Net
                         Stream.WriteShort(((NamedEntitySpawnPacket)packet).Item);
                         break;
 
+                    case PacketType.DestroyEntity:
+                        Stream.WriteInt(((DestroyEntityPacket)packet).EntityID);
+                        break;
+
+                    case PacketType.EntityLookRelativeMove:
+                        Stream.WriteInt(((EntityLookRelativeMovePacket)packet).EntityID);
+                        Stream.WriteByte(((EntityLookRelativeMovePacket)packet).X);
+                        Stream.WriteByte(((EntityLookRelativeMovePacket)packet).Y);
+                        Stream.WriteByte(((EntityLookRelativeMovePacket)packet).Z);
+                        Stream.WriteByte(((EntityLookRelativeMovePacket)packet).Yaw);
+                        Stream.WriteByte(((EntityLookRelativeMovePacket)packet).Pitch);
+                        break;
+
                     default:
                         break;
                 }
