@@ -17,4 +17,5 @@ Thumbs.db
 *.ilk
 *.log
 obj/
+Properties/
 app.config

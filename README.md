@@ -49,3 +49,8 @@ Planned Features (Later)
 * Toggable global/region PVP
 * Complete biome/world managment API (Commands and Web UI); Change biomes instantly and with ease, quickly regenerate chunks, and even entire worlds, without disconnecting players
 * Built-In inventory editing for server administrators through commands and the Web UI
+* Full multi-platform support via Mono
+* A simple and full featured console for direct server control, as well as remote console access with an RCON-like service.
+* Easily add custom blocks to the game to support client mods not normally usable on SMP servers
+* An easy to use and understand web API for fetching real-time statistics (Server load, CPU, RAM, Player list/count, etc.)
+* Full Bukkit plugin support
