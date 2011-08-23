@@ -53,4 +53,5 @@ Planned Features (Later)
 * A simple and full featured console for direct server control, as well as remote console access with an RCON-like service.
 * Easily add custom blocks to the game to support client mods not normally usable on SMP servers
 * An easy to use and understand web API for fetching real-time statistics (Server load, CPU, RAM, Player list/count, etc.)
+* Built-In full featured ajax chat system for the Web UI.
 * Full Bukkit plugin support
