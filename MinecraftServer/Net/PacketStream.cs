@@ -38,13 +38,18 @@ namespace MinecraftServer.Net
                 switch (packet.Type)
                 {
                     case PacketType.KeepAlive:
+                        Stream.WriteInt(((KeepAlivePacket)packet).KeepAliveID);
                         break;
 
                     case PacketType.Login:
                         Stream.WriteInt(((LoginResponsePacket)packet).EntityID);
                         Stream.WriteString16(((LoginResponsePacket)packet).ServerName);
                         Stream.WriteLong(((LoginResponsePacket)packet).MapSeed);
+                        Stream.WriteInt(((LoginResponsePacket)packet).ServerMode);
                         Stream.WriteByte(((LoginResponsePacket)packet).Dimension);
+                        Stream.WriteByte(((LoginResponsePacket)packet).Difficulty);
+                        Stream.WriteByte(((LoginResponsePacket)packet).WorldHeight);
+                        Stream.WriteByte(((LoginResponsePacket)packet).MaxPlayers);
                         break;
 
                     case PacketType.Handshake:
@@ -158,7 +163,8 @@ namespace MinecraftServer.Net
                 Dispose();
             }
 
-            if(packet != null)
+            
+            if(packet != null && packet.Type != PacketType.MapChunk && packet.Type != PacketType.PreChunk)
                 Logger.Debug("Sent " + packet.Type + " packet");
         }
 
@@ -175,14 +181,20 @@ namespace MinecraftServer.Net
                 switch (type)
                 {
                     case PacketType.KeepAlive:
+                        packet = new KeepAlivePacket();
+                        ((KeepAlivePacket)packet).KeepAliveID = Stream.ReadInt();
                         break;
 
                     case PacketType.Login:
                         packet = new LoginRequestPacket();
                         ((LoginRequestPacket)packet).ProtocolVersion = Stream.ReadInt();
                         ((LoginRequestPacket)packet).Username = Stream.ReadString16();
-                        ((LoginRequestPacket)packet).MapSeed = Stream.ReadLong();
-                        ((LoginRequestPacket)packet).Dimension = (byte)Stream.ReadByte();
+                        Stream.ReadLong();
+                        Stream.ReadInt();
+                        Stream.ReadByte();
+                        Stream.ReadByte();
+                        Stream.ReadByte();
+                        Stream.ReadByte();
                         break;
 
                     case PacketType.Handshake:

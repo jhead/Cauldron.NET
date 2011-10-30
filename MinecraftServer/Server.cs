@@ -13,6 +13,8 @@ namespace MinecraftServer
     public class Server
     {
 
+        public static Random Random = new Random();
+
         public IPAddress BindAddress { get; set; }
         public int BindPort { get; set; }
         public IPEndPoint LocalEP { get; set; }
@@ -23,8 +25,11 @@ namespace MinecraftServer
         public int TotalEntityCount { get; set; }
 
         public String ServerName = "Awesome Server";
-        public long MapSeed = 0L;
+        public int GameMode = 1; // 0 = Survival, 1 = Creative
         public Boolean IsNether = false;
+        public int Difficulty = 0; // 0-3; 0 = Peaceful
+        public int MaxPlayers = 50;
+        public long MapSeed = 0L;
 
         private Socket ServerSocket;
         private Dictionary<Socket, Client> Clients;

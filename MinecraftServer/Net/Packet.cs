@@ -45,17 +45,19 @@ namespace MinecraftServer.Net
 
     public class KeepAlivePacket : Packet
     {
+        public int KeepAliveID;
+
         public KeepAlivePacket()
             : base(PacketType.KeepAlive)
-        { }
+        {
+            KeepAliveID = Server.Random.Next(0, 1000000);
+        }
     }
 
     public class LoginRequestPacket : Packet
     {
         public int ProtocolVersion;
         public String Username;
-        public long MapSeed;
-        public byte Dimension;
 
         public LoginRequestPacket()
             : base(PacketType.Login)
@@ -67,15 +69,23 @@ namespace MinecraftServer.Net
         public int EntityID;
         public String ServerName;
         public long MapSeed;
+        public int ServerMode;
+        public byte Difficulty;
         public byte Dimension;
+        public byte WorldHeight;
+        public byte MaxPlayers;
 
-        public LoginResponsePacket(int entityID, String serverName, long mapSeed, byte dimension)
+        public LoginResponsePacket(int entityID, String serverName, long mapSeed, int serverMode, byte dimension, byte difficulty, byte worldHeight, byte maxPlayers)
             : base(PacketType.Login)
         {
             EntityID = entityID;
             ServerName = serverName;
             MapSeed = mapSeed;
+            ServerMode = serverMode;
             Dimension = dimension;
+            Difficulty = difficulty;
+            WorldHeight = worldHeight;
+            MaxPlayers = maxPlayers;
         }
     }
 

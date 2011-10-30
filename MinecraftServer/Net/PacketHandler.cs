@@ -75,7 +75,7 @@ namespace MinecraftServer.Net
 
         private void HandleKeepAlive(Client client, KeepAlivePacket packet)
         {
-            client.Stream.WritePacket(new KeepAlivePacket());
+            // TODO: Check sent value against received value
         }
 
         private void HandleHandshake(Client client, HandshakeRequestPacket packet)
@@ -94,7 +94,7 @@ namespace MinecraftServer.Net
 
             client.Player.EntityID = Server.TotalEntityCount++;
             client.Stream.WritePacket(new LoginResponsePacket(client.Player.EntityID, Server.ServerName,
-                Server.MapSeed, (byte)(Server.IsNether ? -1 : 0)));
+                Server.MapSeed, Server.GameMode, (byte)(Server.IsNether ? -1 : 0), (byte)Server.Difficulty, (byte)128, (byte)Server.MaxPlayers));
             client.Player.Username = packet.Username;
             client.LoggedIn = true;
             client.SendInitialChunks();
@@ -169,7 +169,7 @@ namespace MinecraftServer.Net
                 client.Dispose();
 
             // TODO: Check if player is close enough to break the block; implement Start Digging and Drop statuses
-            if (packet.DigStatus == 2) // Finished Digging
+            if (packet.DigStatus == 2 || Server.GameMode == 1) // Finished Digging
             {
                 Nullable<Block> nb = Server.GetWorldManager().GetWorld(0).GetBlock(new WorldLocation(packet.DigX, (int)packet.DigY, packet.DigZ));
                 if (nb != null)
@@ -196,7 +196,7 @@ namespace MinecraftServer.Net
         private void HandlePlayerBlockPlacement(Client client, PlayerBlockPlacementPacket packet)
         {
             // TODO: Check if player is close enough to place the block; check if player is placing on top of another block, etc.
-            if (packet.Amount >= 0 && packet.BlockID > 0)
+            if (packet.Amount >= 0 && packet.BlockID > 0 && packet.BlockID <= 121)
             {
                 int placeX = packet.X;
                 int placeY = packet.Y;

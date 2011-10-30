@@ -101,11 +101,13 @@ namespace MinecraftServer
         {
             Chunk c = null;
 
-            for (int xOff = -5; xOff <= 5; xOff++)
+            for (int xOff = -7; xOff <= 7; xOff++)
             {
-                for (int zOff = -5; zOff <= 5; zOff++)
+                for (int zOff = -7; zOff <= 7; zOff++)
                 {
-                    c = Server.GetWorldManager().GetWorld(0).GetChunk(new WorldLocation((int)Player.Location.X + (xOff * 16), (int)Player.Location.Y, (int)Player.Location.Z + (zOff * 16)));
+                    c = Server.GetWorldManager().GetWorld(0).GetChunk(
+                        new WorldLocation((int)Player.Location.X + (xOff * 16), (int)Player.Location.Y, (int)Player.Location.Z + (zOff * 16)));
+                        
                     if (c != null)
                         SendChunk(c);
                 }
